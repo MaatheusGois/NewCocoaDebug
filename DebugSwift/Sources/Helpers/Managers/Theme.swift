@@ -7,51 +7,36 @@
 
 import UIKit
 
-public enum Appearance {
-    case dark
-    case light
-    @available(iOS 13.0, *)
-    case automatic
+public typealias Appearance = UIUserInterfaceStyle
+
+//To prevent breaking change
+extension UIUserInterfaceStyle {
+    public static let automatic = UIUserInterfaceStyle.unspecified
 }
 
 class Theme {
     static var shared = Theme()
 
-    var appearance: Appearance = {
-        if #available(iOS 13.0, *) {
-            return .automatic
-        } else {
-            return .dark
-        }
-    }()
+    //This is only really useful for iOS 12 and below now.
+    @UserDefaultAccess(key: .darkMode, defaultValue: UIScreen.main.traitCollection.userInterfaceStyle == .dark)
+    static var isDarkMode: Bool
 
-    var interfaceStyleColor: UIUserInterfaceStyle {
-        switch appearance {
-        case .dark: return .dark
-        case .light: return .light
-        case .automatic: return .unspecified
-        }
-    }
+    //This is only really useful for iOS 12 and below now. 
+    private var appearance: Appearance = {
+        return isDarkMode ? .dark : .light
+    }()
 
     var backgroundColor: UIColor {
         if #available(iOS 13.0, *) {
-            switch appearance {
-            case .dark: return .black
-            case .light: return .white
-            case .automatic: return .systemBackground
-            }
+            return UIColor(light: .white, dark: .black)
         } else {
-            return appearance == .light ? .white : .black
+            return appearance ==  .light ? .white : .black
         }
     }
 
     var fontColor: UIColor {
         if #available(iOS 13.0, *) {
-            switch appearance {
-            case .dark: return .white
-            case .light: return .black
-            case .automatic: return .label
-            }
+            return UIColor(light: .black, dark: .white)
         } else {
             return appearance == .light ? .black : .white
         }
@@ -60,12 +45,9 @@ class Theme {
     var statusFetchColor: UIColor {
         let light = UIColor(hexString: "#32CD32") ?? .green
         let dark = UIColor.green
+
         if #available(iOS 13.0, *) {
-            switch appearance {
-            case .dark: return dark
-            case .light: return light
-            case .automatic: return UIColor(light: light, dark: dark)
-            }
+            return UIColor(light: light, dark: dark)
         } else {
             return appearance == .light ? light : dark
         }
